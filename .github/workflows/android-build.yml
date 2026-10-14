@@ -1,4 +1,4 @@
-name: Build Android APK
+name: Build EduDudas Admin and User APKs
 
 on:
   workflow_dispatch:
@@ -23,12 +23,19 @@ jobs:
         uses: gradle/actions/setup-gradle@v4
         with:
           gradle-version: '8.9'
-      - name: Build debug APK
-        run: gradle --no-daemon assembleDebug
-      - name: Upload installable APK
+      - name: Build both APKs
+        run: gradle --no-daemon :app:assembleDebug :app-user:assembleDebug
+      - name: Upload administrator APK
         uses: actions/upload-artifact@v4
         with:
-          name: edududas-lan-server-debug-apk
+          name: edududas-administrador-apk
           path: app/build/outputs/apk/debug/app-debug.apk
+          if-no-files-found: error
+          retention-days: 14
+      - name: Upload common-user APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: edududas-uso-comun-apk
+          path: app-user/build/outputs/apk/debug/app-user-debug.apk
           if-no-files-found: error
           retention-days: 14
