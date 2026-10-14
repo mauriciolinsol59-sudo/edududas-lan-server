@@ -102,7 +102,7 @@ class MainActivity : Activity() {
                 ?: addresses.firstOrNull { it.startsWith("10.") }
                 ?: addresses.firstOrNull { ip ->
                     val parts = ip.split(".")
-                    parts.size == 4 && parts[0] == "172" && parts[1].toIntOrNull() in 16..31
+                    parts.size == 4 && parts[0] == "172" && (parts[1].toIntOrNull()?.let { it in 16..31 } == true)
                 }
                 ?: addresses.firstOrNull()
         } catch (_: Exception) {
