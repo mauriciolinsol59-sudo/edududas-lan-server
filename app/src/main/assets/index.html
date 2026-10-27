@@ -1,0 +1,340 @@
+<!doctype html>
+<html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#0b1020"><meta name="description" content="Moodify: música por emociones, con un planeta desplegable para cada estado de ánimo."><title>Moodify | Planetas musicales</title>
+<style>
+:root{color-scheme:dark;--bg:#0b1020;--card:#17213a;--white:#f2f6ff;--muted:#b9c5dd}
+*{box-sizing:border-box}html{scroll-behavior:smooth}body{margin:0;background:#0b1020;background-image:radial-gradient(circle at 14% 15%,#ffffff21 1px,transparent 2px),radial-gradient(circle at 83% 11%,#ffffff22 1px,transparent 2px),radial-gradient(circle at 63% 43%,#ffffff18 1px,transparent 2px),linear-gradient(180deg,#10182b,#0b1020 70%);background-size:181px 195px,231px 217px,273px 287px,100% 100%;color:var(--white);font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif}
+.app{max-width:820px;margin:0 auto;padding:34px 18px 52px}
+.eyebrow{font-size:11px;letter-spacing:2px;color:#a5bbe1;font-weight:800;text-transform:uppercase;margin:0 0 12px}
+h1{font-size:clamp(30px,7vw,45px);line-height:1.08;letter-spacing:-1.2px;margin:0 0 14px;font-weight:850}
+.intro{font-size:15px;line-height:1.55;color:var(--muted);margin:0 0 24px;max-width:560px}
+.section-title{font-size:12px;letter-spacing:1.5px;font-weight:800;color:#cad8ff;margin-bottom:14px;text-transform:uppercase}
+.emotion-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;align-items:start}
+.emotion-card{min-width:0;background:var(--card);border:1px solid #43506b;border-radius:6px;overflow:hidden;box-shadow:3px 3px 0 #05081522}
+.emotion-card.open{grid-column:1/-1;border-color:var(--planet-color);background:#1a2845}
+.emotion-trigger{appearance:none;display:flex;flex-direction:column;gap:3px;align-items:center;justify-content:center;min-height:161px;width:100%;position:relative;padding:12px 7px;color:var(--white);background:transparent;border:0;border-left:5px solid var(--planet-color);cursor:pointer;text-align:center;font:inherit}
+.emotion-trigger:hover{background:#ffffff0b}
+.emotion-trigger:focus-visible,.play:focus-visible{outline:3px solid #d1e4ff;outline-offset:-4px}
+.planet-icon{width:80px;height:80px;display:block;object-fit:contain;flex-shrink:0}
+.emotion-meta{display:flex;align-items:center;flex-direction:column;gap:5px}
+.emotion-name{font-size:17px;font-weight:850;line-height:1.1}
+.planet-title{font-size:10px;letter-spacing:.5px;text-transform:uppercase;color:#aebcd9}
+.toggle-hint{font-size:11px;font-weight:800;letter-spacing:.2px;margin-top:4px;color:#b8cdfb}
+.emotion-card.open .emotion-trigger{min-height:95px;flex-direction:row;text-align:left;justify-content:flex-start;padding:10px 14px;gap:13px}
+.emotion-card.open .emotion-meta{align-items:flex-start}
+.emotion-card.open .planet-icon{width:75px;height:75px}
+.emotion-details{border-top:1px solid #405272;padding:7px 14px 13px;background:#121c32}
+.emotion-details[hidden]{display:none!important}
+.description{font-size:13px;line-height:1.5;color:var(--muted);margin:7px 0 12px}
+.detail-heading{font-size:12px;text-transform:uppercase;letter-spacing:1px;color:#d2ddff;font-weight:800;margin:5px 0 8px}
+.playlist{display:flex;gap:10px;align-items:center;padding:11px 0;border-top:1px solid #33415d}
+.cover{height:37px;width:37px;background:#324365;display:grid;place-items:center;color:#dbe5ff;border:1px solid #617095;border-radius:3px;flex-shrink:0;font-size:20px}
+.trackinfo{min-width:0;flex:1}.trackinfo strong{font-size:14px;display:block}.trackinfo small{display:block;margin-top:3px;font-size:12px;line-height:1.3;color:var(--muted);overflow-wrap:anywhere}
+.play{font-size:12px;font-weight:800;text-decoration:none;color:#0b281a;background:#a4e5bf;padding:9px 10px;border-radius:3px;white-space:nowrap}
+.play:hover{background:#c0f9d7}
+.status{min-height:18px;font-size:12px;color:#b5caff;margin-top:17px}.foot{font-size:12px;line-height:1.6;color:#99aac6;margin:12px 0 0}
+@media(min-width:650px){.emotion-grid{grid-template-columns:repeat(3,minmax(0,1fr))}.emotion-trigger{min-height:178px}.planet-icon{width:91px;height:91px}}
+@media(max-width:365px){.app{padding-left:10px;padding-right:10px}.emotion-trigger{padding-left:4px;padding-right:4px}.planet-icon{width:69px;height:69px}.emotion-name{font-size:16px}.play{padding:9px 7px}}
+@media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}}
+
+.play{appearance:none;border:0;cursor:pointer}.inline-player{padding:11px 0 4px;min-width:0}
+.inline-player[hidden]{display:none!important}.spotify-embed{width:100%;min-height:160px;height:170px;border:0;border-radius:5px;background:#121c32;display:block}
+
+.music-tools{border:1px solid #43506b;border-radius:6px;background:var(--card);padding:14px;margin:0 0 22px}
+.music-tools h2{font-size:16px;margin:0 0 12px}.search-line,.tool-links,.track-actions,.library-nav{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.search-line input{flex:1;min-width:120px;background:#0b1020;border:1px solid #617095;border-radius:3px;padding:11px;color:var(--white);font:inherit;font-size:14px}
+.small-button,.secondary{font:inherit;font-size:12px;cursor:pointer;border:1px solid #617095;border-radius:3px;padding:9px 10px;background:#263754;color:var(--white);text-decoration:none;display:inline-block}
+.small-button:hover,.secondary:hover{background:#344a6c}.library-nav{margin-top:12px}.library-nav button[aria-pressed="true"]{border-color:#a4e5bf;color:#c0f9d7}
+.tool-links{margin-top:10px}.help{font-size:12px;line-height:1.5;color:var(--muted);margin:10px 0}.track-actions{justify-content:flex-end}.favorite[aria-pressed="true"]{color:#ffe09b;border-color:#ffe09b}
+.playlist{flex-wrap:wrap}.trackinfo{overflow-wrap:anywhere}.results-title{font-size:13px;margin:16px 0 8px}.play,.secondary,.small-button{min-height:38px;display:inline-flex;align-items:center;justify-content:center}
+:focus-visible{outline:3px solid #d1e4ff;outline-offset:3px}[hidden]{display:none!important}
+@media(max-width:480px){.track-actions{width:100%;justify-content:flex-start;padding-left:47px}.track-actions>*{flex-grow:1}.music-tools{padding:12px}}
+.inline-player{width:100%;border-top:1px solid #33415d;margin-top:6px}.inline-player .help{margin:8px 0}
+.player-close{margin-top:8px}.offline-warning{border:1px solid #a88b45;background:#413219;color:#ffe7b1;padding:10px 12px;border-radius:5px;font-size:12px;line-height:1.5;margin:10px 0}
+.app{padding-top:max(34px,env(safe-area-inset-top));padding-bottom:max(52px,env(safe-area-inset-bottom))}
+
+</style></head>
+<body><main class="app">
+<p class="eyebrow">Explora tu universo musical</p><h1>¿Cómo te sientes hoy?</h1>
+<p class="intro">Cada emoción tiene su planeta. Toca uno para desplegar sus recomendaciones musicales dentro del mismo panel.</p>
+<section class="music-tools" aria-labelledby="search-title">
+<h2 id="search-title">Busca una canción</h2>
+<form id="search-form" role="search"><label class="help" for="song-query">Nombre de la canción o artista</label><div class="search-line"><input id="song-query" type="search" maxlength="150" placeholder="Ej. Eres, Adele, Coldplay…" autocomplete="off"><button class="play" type="submit">Buscar</button><button id="clear-search" class="small-button" type="button">Limpiar</button></div></form>
+<p class="help">Busca entre las 18 canciones de los planetas. Para canciones adicionales puedes buscar en Spotify o YouTube.</p>
+<div id="external-search" class="tool-links" hidden></div>
+<div class="library-nav" aria-label="Tus canciones"><button type="button" class="small-button" id="show-favorites" aria-pressed="false">☆ Favoritos</button><button type="button" class="small-button" id="show-history" aria-pressed="false">Últimas abiertas</button><button type="button" class="small-button" id="clear-history" hidden>Borrar historial</button></div>
+<div id="offline-notice" class="offline-warning" role="status" hidden>Sin conexión a internet. Puedes consultar los planetas, buscar entre las canciones y usar tus favoritos. La reproducción y los enlaces externos estarán disponibles cuando vuelvas a conectarte.</div><div id="search-message" class="help" role="status" aria-live="polite"></div><div id="search-results"></div>
+</section><div class="section-title">Elige un planeta</div><section class="emotion-grid" id="emotions" aria-label="Planetas de emociones"></section>
+<div class="status" id="status" role="status" aria-live="polite">Toca un planeta y elige una canción para escucharla.</div>
+<p class="foot">Puedes escuchar dentro de Moodify usando el reproductor integrado de Spotify (puede requerir iniciar sesión y tener limitaciones de reproducción). También puedes abrir la canción en Spotify o buscarla en YouTube. La música requiere internet; los planetas, la búsqueda local, los favoritos y el historial funcionan sin conexión.</p>
+</main><script>
+const data = [
+  {
+    "id": "alegria",
+    "name": "Alegría",
+    "icon": "☀️",
+    "explain": "Música alegre para levantar el ánimo.",
+    "tracks": [
+      {
+        "title": "Happy",
+        "artist": "Pharrell Williams",
+        "id": "60nZcImufyMA1MKQY3dcCH"
+      },
+      {
+        "title": "CAN’T STOP THE FEELING!",
+        "artist": "Justin Timberlake",
+        "id": "6JV2JOEocMgcZxYSZelKcc"
+      },
+      {
+        "title": "Vivir Mi Vida",
+        "artist": "Marc Anthony",
+        "id": "3QHMxEOAGD51PDlbFPHLyJ"
+      }
+    ]
+  },
+  {
+    "id": "tristeza",
+    "name": "Tristeza",
+    "icon": "🌧️",
+    "explain": "Canciones sobre recuerdos, pérdidas y nostalgia.",
+    "tracks": [
+      {
+        "title": "Someone Like You",
+        "artist": "Adele",
+        "id": "1zwMYTA5nlNjZxYrvBB2pV"
+      },
+      {
+        "title": "Amorfoda",
+        "artist": "Bad Bunny",
+        "id": "68QcquxCS39cQGTsRrJWIR"
+      },
+      {
+        "title": "The Night We Met",
+        "artist": "Lord Huron",
+        "id": "5yJaXWIErrrsjQ3J0eR5aK"
+      }
+    ]
+  },
+  {
+    "id": "miedo",
+    "name": "Miedo",
+    "icon": "🌙",
+    "explain": "Canciones con ambientes inquietantes o misteriosos.",
+    "tracks": [
+      {
+        "title": "Thriller",
+        "artist": "Michael Jackson",
+        "id": "2LlQb7Uoj1kKyGhlkBf9aC"
+      },
+      {
+        "title": "bury a friend",
+        "artist": "Billie Eilish",
+        "id": "4SSnFejRGlZikf02HLewEF"
+      },
+      {
+        "title": "Disturbia",
+        "artist": "Rihanna",
+        "id": "2VOomzT6VavJOGBeySqaMc"
+      }
+    ]
+  },
+  {
+    "id": "enojo",
+    "name": "Enojo",
+    "icon": "⚡",
+    "explain": "Canciones intensas para expresar la frustración.",
+    "tracks": [
+      {
+        "title": "Numb",
+        "artist": "Linkin Park",
+        "id": "2nLtzopw4rPReszdYBJU6h"
+      },
+      {
+        "title": "Believer",
+        "artist": "Imagine Dragons",
+        "id": "0pqnGHJpmpxLKifKRmU6WP"
+      },
+      {
+        "title": "abcdefu",
+        "artist": "GAYLE",
+        "id": "5TrB6o3iQMaW9NueIlJjKG"
+      }
+    ]
+  },
+  {
+    "id": "sorpresa",
+    "name": "Sorpresa",
+    "icon": "✨",
+    "explain": "Canciones con cambios y energía inesperados.",
+    "tracks": [
+      {
+        "title": "Bohemian Rhapsody",
+        "artist": "Queen",
+        "id": "2JiDi0qAXsPwhPqA2qaKGt"
+      },
+      {
+        "title": "Viva La Vida",
+        "artist": "Coldplay",
+        "id": "1mea3bSkSGXuIRvnydlB5b"
+      },
+      {
+        "title": "A Sky Full of Stars",
+        "artist": "Coldplay",
+        "id": "0FDzzruyVECATHXKHFs9eJ"
+      }
+    ]
+  },
+  {
+    "id": "amor",
+    "name": "Amor",
+    "icon": "💗",
+    "explain": "Canciones sobre el cariño y el enamoramiento.",
+    "tracks": [
+      {
+        "title": "Perfect",
+        "artist": "Ed Sheeran",
+        "id": "0tgVpDi06FyKpA1z0VMD4v"
+      },
+      {
+        "title": "All of Me",
+        "artist": "John Legend",
+        "id": "3U4isOIWM3VvDubwSI3y7a"
+      },
+      {
+        "title": "Eres",
+        "artist": "Café Tacvba",
+        "id": "6kdCN6gTWLcLxmLXoUcwuI"
+      }
+    ]
+  }
+];
+const planets = {"alegria": "data:image/svg+xml;charset=utf-8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%20160%20160%22%20width%3D%22160%22%20height%3D%22160%22%3E%0A%20%3Cdefs%3E%3CradialGradient%20id%3D%22orb%22%20cx%3D%2227%25%22%20cy%3D%2219%25%22%20r%3D%2281%25%22%3E%0A%20%3Cstop%20stop-color%3D%22%23FFECA0%22%2F%3E%3Cstop%20offset%3D%22.48%22%20stop-color%3D%22%23F2AD28%22%2F%3E%3Cstop%20offset%3D%221%22%20stop-color%3D%22%23B5621C%22%2F%3E%3C%2FradialGradient%3E%0A%20%3CradialGradient%20id%3D%22shade%22%20cx%3D%2226%25%22%20cy%3D%2219%25%22%20r%3D%2282%25%22%3E%3Cstop%20stop-color%3D%22%23ffffff%22%20stop-opacity%3D%22.40%22%2F%3E%3Cstop%20offset%3D%221%22%20stop-color%3D%22%23ffffff%22%20stop-opacity%3D%220%22%2F%3E%3C%2FradialGradient%3E%0A%20%3C%2Fdefs%3E%0A%20%3Cellipse%20cx%3D%2280%22%20cy%3D%2283%22%20rx%3D%2259%22%20ry%3D%2263%22%20fill%3D%22%23F2AD28%22%20opacity%3D%22.1%22%2F%3E%0A%20%3Ccircle%20cx%3D%2280%22%20cy%3D%2278%22%20r%3D%2252%22%20fill%3D%22url%28%23orb%29%22%20stroke%3D%22%23FFE7A5%22%20stroke-opacity%3D%22.7%22%20stroke-width%3D%221.2%22%2F%3E%0A%20%3Ccircle%20cx%3D%2280%22%20cy%3D%2278%22%20r%3D%2252%22%20fill%3D%22url%28%23shade%29%22%2F%3E%0A%20%3Cpath%20d%3D%22M37%2062Q80%2043%20124%2061M31%2083Q81%2064%20130%2080M40%20105Q81%2090%20120%20105%22%20fill%3D%22none%22%20stroke%3D%22%23FFD27C%22%20opacity%3D%22.65%22%20stroke-width%3D%229%22%20stroke-linecap%3D%22round%22%2F%3E%0A%20%20%3Ccircle%20cx%3D%2268%22%20cy%3D%2269%22%20r%3D%224%22%20fill%3D%22%239A531C%22%2F%3E%3Ccircle%20cx%3D%2295%22%20cy%3D%2269%22%20r%3D%224%22%20fill%3D%22%239A531C%22%2F%3E%0A%20%20%3Cpath%20d%3D%22M64%2089Q81%20105%2099%2087%22%20fill%3D%22none%22%20stroke%3D%22%239A531C%22%20stroke-width%3D%224.8%22%20stroke-linecap%3D%22round%22%2F%3E%3C%2Fsvg%3E", "tristeza": "data:image/svg+xml;charset=utf-8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%20160%20160%22%20width%3D%22160%22%20height%3D%22160%22%3E%0A%20%3Cdefs%3E%3CradialGradient%20id%3D%22orb%22%20cx%3D%2227%25%22%20cy%3D%2219%25%22%20r%3D%2281%25%22%3E%0A%20%3Cstop%20stop-color%3D%22%23BFE1FF%22%2F%3E%3Cstop%20offset%3D%22.48%22%20stop-color%3D%22%23477DC9%22%2F%3E%3Cstop%20offset%3D%221%22%20stop-color%3D%22%23233D83%22%2F%3E%3C%2FradialGradient%3E%0A%20%3CradialGradient%20id%3D%22shade%22%20cx%3D%2226%25%22%20cy%3D%2219%25%22%20r%3D%2282%25%22%3E%3Cstop%20stop-color%3D%22%23ffffff%22%20stop-opacity%3D%22.40%22%2F%3E%3Cstop%20offset%3D%221%22%20stop-color%3D%22%23ffffff%22%20stop-opacity%3D%220%22%2F%3E%3C%2FradialGradient%3E%0A%20%3C%2Fdefs%3E%0A%20%3Cellipse%20cx%3D%2280%22%20cy%3D%2283%22%20rx%3D%2259%22%20ry%3D%2263%22%20fill%3D%22%23477DC9%22%20opacity%3D%22.1%22%2F%3E%0A%20%3Ccircle%20cx%3D%2280%22%20cy%3D%2278%22%20r%3D%2252%22%20fill%3D%22url%28%23orb%29%22%20stroke%3D%22%239FC6FA%22%20stroke-opacity%3D%22.7%22%20stroke-width%3D%221.2%22%2F%3E%0A%20%3Ccircle%20cx%3D%2280%22%20cy%3D%2278%22%20r%3D%2252%22%20fill%3D%22url%28%23shade%29%22%2F%3E%0A%20%3Cpath%20d%3D%22M31%2076Q75%2058%20126%2077M38%20102Q84%2083%20119%2099%22%20fill%3D%22none%22%20stroke%3D%22%2395BAE5%22%20stroke-width%3D%229%22%20opacity%3D%22.63%22%2F%3E%0A%20%20%3Cpath%20d%3D%22M62%2077L70%2076M94%2076l8%201%22%20stroke%3D%22%23203E7A%22%20stroke-width%3D%225%22%20stroke-linecap%3D%22round%22%2F%3E%0A%20%20%3Cpath%20d%3D%22M66%2096Q81%2086%2097%2098%22%20stroke%3D%22%23203E7A%22%20stroke-width%3D%224.5%22%20stroke-linecap%3D%22round%22%20fill%3D%22none%22%2F%3E%0A%20%20%3Cpath%20d%3D%22M107%2084Q115%2099%20107%20103Q98%20101%20107%2084%22%20fill%3D%22%23BCEBFF%22%2F%3E%3C%2Fsvg%3E", "miedo": "data:image/svg+xml;charset=utf-8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%20160%20160%22%20width%3D%22160%22%20height%3D%22160%22%3E%0A%20%3Cdefs%3E%3CradialGradient%20id%3D%22orb%22%20cx%3D%2227%25%22%20cy%3D%2219%25%22%20r%3D%2281%25%22%3E%0A%20%3Cstop%20stop-color%3D%22%23B5A0DD%22%2F%3E%3Cstop%20offset%3D%22.48%22%20stop-color%3D%22%237255A9%22%2F%3E%3Cstop%20offset%3D%221%22%20stop-color%3D%22%23302552%22%2F%3E%3C%2FradialGradient%3E%0A%20%3CradialGradient%20id%3D%22shade%22%20cx%3D%2226%25%22%20cy%3D%2219%25%22%20r%3D%2282%25%22%3E%3Cstop%20stop-color%3D%22%23ffffff%22%20stop-opacity%3D%22.40%22%2F%3E%3Cstop%20offset%3D%221%22%20stop-color%3D%22%23ffffff%22%20stop-opacity%3D%220%22%2F%3E%3C%2FradialGradient%3E%0A%20%3C%2Fdefs%3E%0A%20%3Cellipse%20cx%3D%2280%22%20cy%3D%2283%22%20rx%3D%2259%22%20ry%3D%2263%22%20fill%3D%22%237255A9%22%20opacity%3D%22.1%22%2F%3E%0A%20%3Ccircle%20cx%3D%2280%22%20cy%3D%2278%22%20r%3D%2252%22%20fill%3D%22url%28%23orb%29%22%20stroke%3D%22%2349375C%22%20stroke-opacity%3D%22.7%22%20stroke-width%3D%221.2%22%2F%3E%0A%20%3Ccircle%20cx%3D%2280%22%20cy%3D%2278%22%20r%3D%2252%22%20fill%3D%22url%28%23shade%29%22%2F%3E%0A%20%3Ccircle%20cx%3D%2261%22%20cy%3D%2256%22%20r%3D%2212%22%20fill%3D%22%23352653%22%20opacity%3D%22.5%22%2F%3E%3Ccircle%20cx%3D%2299%22%20cy%3D%22106%22%20r%3D%2217%22%20fill%3D%22%232D224C%22%20opacity%3D%22.48%22%2F%3E%3Ccircle%20cx%3D%22111%22%20cy%3D%2261%22%20r%3D%227%22%20fill%3D%22%23261D3D%22%20opacity%3D%22.52%22%2F%3E%0A%20%20%3Cellipse%20cx%3D%2268%22%20cy%3D%2280%22%20rx%3D%224%22%20ry%3D%227%22%20fill%3D%22%231E1633%22%2F%3E%3Cellipse%20cx%3D%2293%22%20cy%3D%2280%22%20rx%3D%224%22%20ry%3D%227%22%20fill%3D%22%231E1633%22%2F%3E%0A%20%20%3Cellipse%20cx%3D%2280%22%20cy%3D%22101%22%20rx%3D%226%22%20ry%3D%229%22%20fill%3D%22%231E1633%22%2F%3E%3C%2Fsvg%3E", "enojo": "data:image/svg+xml;charset=utf-8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%20160%20160%22%20width%3D%22160%22%20height%3D%22160%22%3E%0A%20%3Cdefs%3E%3CradialGradient%20id%3D%22orb%22%20cx%3D%2227%25%22%20cy%3D%2219%25%22%20r%3D%2281%25%22%3E%0A%20%3Cstop%20stop-color%3D%22%23FFB28D%22%2F%3E%3Cstop%20offset%3D%22.48%22%20stop-color%3D%22%23D65349%22%2F%3E%3Cstop%20offset%3D%221%22%20stop-color%3D%22%237E2628%22%2F%3E%3C%2FradialGradient%3E%0A%20%3CradialGradient%20id%3D%22shade%22%20cx%3D%2226%25%22%20cy%3D%2219%25%22%20r%3D%2282%25%22%3E%3Cstop%20stop-color%3D%22%23ffffff%22%20stop-opacity%3D%22.40%22%2F%3E%3Cstop%20offset%3D%221%22%20stop-color%3D%22%23ffffff%22%20stop-opacity%3D%220%22%2F%3E%3C%2FradialGradient%3E%0A%20%3C%2Fdefs%3E%0A%20%3Cellipse%20cx%3D%2280%22%20cy%3D%2283%22%20rx%3D%2259%22%20ry%3D%2263%22%20fill%3D%22%23D65349%22%20opacity%3D%22.1%22%2F%3E%0A%20%3Ccircle%20cx%3D%2280%22%20cy%3D%2278%22%20r%3D%2252%22%20fill%3D%22url%28%23orb%29%22%20stroke%3D%22%23FFAF74%22%20stroke-opacity%3D%22.7%22%20stroke-width%3D%221.2%22%2F%3E%0A%20%3Ccircle%20cx%3D%2280%22%20cy%3D%2278%22%20r%3D%2252%22%20fill%3D%22url%28%23shade%29%22%2F%3E%0A%20%3Cpath%20d%3D%22M38%2062L117%2083M32%2085L119%20105M57%2044L121%2061%22%20stroke%3D%22%23FFAA72%22%20stroke-width%3D%228%22%20opacity%3D%22.63%22%20stroke-linecap%3D%22round%22%2F%3E%0A%20%20%3Cpath%20d%3D%22M61%2076L72%2080M99%2076L88%2080%22%20stroke%3D%22%2360202A%22%20stroke-width%3D%225%22%20stroke-linecap%3D%22round%22%2F%3E%0A%20%20%3Cpath%20d%3D%22M65%20102L97%20102%22%20stroke%3D%22%2360202A%22%20stroke-width%3D%225%22%20stroke-linecap%3D%22round%22%2F%3E%3C%2Fsvg%3E", "sorpresa": "data:image/svg+xml;charset=utf-8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%20160%20160%22%20width%3D%22160%22%20height%3D%22160%22%3E%0A%20%3Cdefs%3E%3CradialGradient%20id%3D%22orb%22%20cx%3D%2227%25%22%20cy%3D%2219%25%22%20r%3D%2281%25%22%3E%0A%20%3Cstop%20stop-color%3D%22%23D4FFF2%22%2F%3E%3Cstop%20offset%3D%22.48%22%20stop-color%3D%22%2355C9BA%22%2F%3E%3Cstop%20offset%3D%221%22%20stop-color%3D%22%23167D83%22%2F%3E%3C%2FradialGradient%3E%0A%20%3CradialGradient%20id%3D%22shade%22%20cx%3D%2226%25%22%20cy%3D%2219%25%22%20r%3D%2282%25%22%3E%3Cstop%20stop-color%3D%22%23ffffff%22%20stop-opacity%3D%22.40%22%2F%3E%3Cstop%20offset%3D%221%22%20stop-color%3D%22%23ffffff%22%20stop-opacity%3D%220%22%2F%3E%3C%2FradialGradient%3E%0A%20%3C%2Fdefs%3E%0A%20%3Cellipse%20cx%3D%2280%22%20cy%3D%2283%22%20rx%3D%2259%22%20ry%3D%2263%22%20fill%3D%22%2355C9BA%22%20opacity%3D%22.1%22%2F%3E%0A%20%3Ccircle%20cx%3D%2280%22%20cy%3D%2278%22%20r%3D%2252%22%20fill%3D%22url%28%23orb%29%22%20stroke%3D%22%23E0DA78%22%20stroke-opacity%3D%22.7%22%20stroke-width%3D%221.2%22%2F%3E%0A%20%3Ccircle%20cx%3D%2280%22%20cy%3D%2278%22%20r%3D%2252%22%20fill%3D%22url%28%23shade%29%22%2F%3E%0A%20%3Cellipse%20cx%3D%2280%22%20cy%3D%2280%22%20rx%3D%2276%22%20ry%3D%2222%22%20transform%3D%22rotate%28-22%2080%2080%29%22%20fill%3D%22none%22%20stroke%3D%22%23E5E4A4%22%20stroke-width%3D%2211%22%20opacity%3D%22.75%22%2F%3E%0A%20%20%3Cpath%20d%3D%22M47%2073Q83%2050%20123%2067%22%20stroke%3D%22%23BAFFEA%22%20stroke-width%3D%228%22%20opacity%3D%22.6%22%20fill%3D%22none%22%2F%3E%0A%20%20%3Ccircle%20cx%3D%2269%22%20cy%3D%2279%22%20r%3D%224%22%20fill%3D%22%23145E6D%22%2F%3E%3Ccircle%20cx%3D%2297%22%20cy%3D%2279%22%20r%3D%224%22%20fill%3D%22%23145E6D%22%2F%3E%0A%20%20%3Cellipse%20cx%3D%2283%22%20cy%3D%2299%22%20rx%3D%227%22%20ry%3D%229%22%20fill%3D%22%23145E6D%22%2F%3E%0A%20%20%3Cpath%20d%3D%22M4%20103Q80%20129%20153%2055%22%20transform%3D%22rotate%28-22%2080%2080%29%22%20fill%3D%22none%22%20stroke%3D%22%23FAF7C6%22%20stroke-width%3D%223%22%20opacity%3D%22.55%22%2F%3E%3C%2Fsvg%3E", "amor": "data:image/svg+xml;charset=utf-8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%20160%20160%22%20width%3D%22160%22%20height%3D%22160%22%3E%0A%20%3Cdefs%3E%3CradialGradient%20id%3D%22orb%22%20cx%3D%2227%25%22%20cy%3D%2219%25%22%20r%3D%2281%25%22%3E%0A%20%3Cstop%20stop-color%3D%22%23FFD9F2%22%2F%3E%3Cstop%20offset%3D%22.48%22%20stop-color%3D%22%23E775B5%22%2F%3E%3Cstop%20offset%3D%221%22%20stop-color%3D%22%238B3A82%22%2F%3E%3C%2FradialGradient%3E%0A%20%3CradialGradient%20id%3D%22shade%22%20cx%3D%2226%25%22%20cy%3D%2219%25%22%20r%3D%2282%25%22%3E%3Cstop%20stop-color%3D%22%23ffffff%22%20stop-opacity%3D%22.40%22%2F%3E%3Cstop%20offset%3D%221%22%20stop-color%3D%22%23ffffff%22%20stop-opacity%3D%220%22%2F%3E%3C%2FradialGradient%3E%0A%20%3C%2Fdefs%3E%0A%20%3Cellipse%20cx%3D%2280%22%20cy%3D%2283%22%20rx%3D%2259%22%20ry%3D%2263%22%20fill%3D%22%23E775B5%22%20opacity%3D%22.1%22%2F%3E%0A%20%3Ccircle%20cx%3D%2280%22%20cy%3D%2278%22%20r%3D%2252%22%20fill%3D%22url%28%23orb%29%22%20stroke%3D%22%23FFBFDB%22%20stroke-opacity%3D%22.7%22%20stroke-width%3D%221.2%22%2F%3E%0A%20%3Ccircle%20cx%3D%2280%22%20cy%3D%2278%22%20r%3D%2252%22%20fill%3D%22url%28%23shade%29%22%2F%3E%0A%20%3Cpath%20d%3D%22M36%2065Q82%2050%20124%2069M39%2099Q82%2084%20119%20100%22%20fill%3D%22none%22%20stroke%3D%22%23FFCEE8%22%20stroke-width%3D%228%22%20opacity%3D%22.65%22%2F%3E%0A%20%20%3Cpath%20d%3D%22M80%20107C45%2087%2055%2071%2069%2071C75%2071%2079%2074%2080%2078C87%2066%20101%2070%20105%2079C110%2090%2093%20100%2080%20107Z%22%20fill%3D%22%239D245D%22%20opacity%3D%22.9%22%2F%3E%0A%20%20%3Ccircle%20cx%3D%2254%22%20cy%3D%2258%22%20r%3D%225%22%20fill%3D%22%23FFF0F6%22%20opacity%3D%22.9%22%2F%3E%3C%2Fsvg%3E"};
+
+
+
+
+const grid=document.getElementById('emotions');
+const status=document.getElementById('status');
+const labels={alegria:'Planeta Alegría',tristeza:'Planeta Tristeza',miedo:'Planeta del Miedo',enojo:'Planeta Enojo',sorpresa:'Planeta Sorpresa',amor:'Planeta Amor'};
+const tones={alegria:'#ecb64a',tristeza:'#658cd7',miedo:'#a28ad6',enojo:'#e07762',sorpresa:'#6fd9c3',amor:'#f3a1c9'};
+function el(tag,cls,t){const x=document.createElement(tag);if(cls)x.className=cls;if(t!==undefined)x.textContent=t;return x}
+const catalog=data.flatMap(emotion=>emotion.tracks);
+const byId=new Map(catalog.map(track=>[track.id,track]));
+let activePlayer=null;
+function closePlayer(player){
+ if(!player)return;
+ const iframe=player.querySelector('iframe');if(iframe)iframe.remove();
+ player.hidden=true;if(activePlayer===player)activePlayer=null;
+}
+function markHistory(track,refresh=true){history=[track.id,...history.filter(id=>id!==track.id)].slice(0,10);persist('moodify-history',history);if(refresh&&view==='history')renderSearch()}
+
+function readSaved(key){try{const value=JSON.parse(localStorage.getItem(key)||'[]');return Array.isArray(value)?[...new Set(value.filter(id=>byId.has(id)))]:[]}catch{return []}}
+let favorites=readSaved('moodify-favorites'),history=readSaved('moodify-history').slice(0,10),view='search';
+const query=document.getElementById('song-query'),results=document.getElementById('search-results'),message=document.getElementById('search-message'),external=document.getElementById('external-search');
+const favoriteTab=document.getElementById('show-favorites'),historyTab=document.getElementById('show-history');
+function persist(key,value){try{localStorage.setItem(key,JSON.stringify(value))}catch{status.textContent='Tu navegador no permite guardar los cambios. Se conservarán mientras esta página esté abierta.'}}
+function normalize(value){return value.normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().replace(/[’‘]/g,"'")}
+function link(label,url,cls){const a=el('a',cls,label);a.href=url;a.target='_blank';a.rel='noopener noreferrer';return a}
+function searchUrl(service,text){return service==='spotify'?'https://open.spotify.com/search/'+encodeURIComponent(text):'https://www.youtube.com/results?search_query='+encodeURIComponent(text)}
+function trackRow(track){
+ const row=el('div','playlist'),art=el('span','cover','♫'),info=el('div','trackinfo'),actions=el('div','track-actions');art.setAttribute('aria-hidden','true');
+ info.append(el('strong','',track.title),el('small','',track.artist));
+ const listen=el('button','play','▶ Escuchar aquí');listen.type='button';
+ listen.setAttribute('aria-label','Escuchar '+track.title+' de '+track.artist+' dentro de Moodify');
+ const spotify=link('Spotify','https://open.spotify.com/track/'+encodeURIComponent(track.id),'secondary');
+ spotify.setAttribute('aria-label','Abrir '+track.title+' de '+track.artist+' en Spotify');
+ const youtube=link('YouTube',searchUrl('youtube',track.title+' '+track.artist),'secondary');
+ youtube.setAttribute('aria-label','Buscar '+track.title+' de '+track.artist+' en YouTube');
+ const player=el('div','inline-player');player.hidden=true;
+ const hint=el('p','help','Pulsa reproducir en el panel de Spotify. Según la canción o tu cuenta, Spotify puede limitar la reproducción.');
+ const close=el('button','small-button player-close','Cerrar reproductor');close.type='button';
+ close.addEventListener('click',()=>{closePlayer(player);listen.focus()});
+ player.append(hint,close);
+ listen.addEventListener('click',()=>{
+   if(!player.hidden){closePlayer(player);return}
+   if(activePlayer&&activePlayer!==player)closePlayer(activePlayer);
+   const frame=el('iframe','spotify-embed');frame.title='Reproductor de Spotify: '+track.title+' de '+track.artist;
+   frame.src='https://open.spotify.com/embed/track/'+encodeURIComponent(track.id)+'?utm_source=generator';
+   frame.allow='autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture';
+   frame.setAttribute('loading','eager');
+   player.insertBefore(frame,close);player.hidden=false;activePlayer=player;
+   markHistory(track,false);
+   status.textContent='Reproductor abierto para '+track.title+'. Pulsa reproducir en Spotify.';
+ });
+ for(const a of [spotify,youtube])a.addEventListener('click',()=>{markHistory(track);status.textContent='Abriendo '+track.title+' en '+(a===spotify?'Spotify':'YouTube')+'.'});
+ const favorite=el('button','small-button favorite');favorite.type='button';favorite.dataset.track=track.id;
+ favorite.addEventListener('click',()=>{
+  const adding=!favorites.includes(track.id);favorites=adding?[...favorites,track.id]:favorites.filter(id=>id!==track.id);
+  status.textContent=track.title+(adding?' añadida a favoritos.':' eliminada de favoritos.');persist('moodify-favorites',favorites);syncFavorites();
+  if(view==='favorites'){const oldIndex=[...results.querySelectorAll('.favorite')].indexOf(favorite);renderSearch();const buttons=results.querySelectorAll('.favorite');(buttons[Math.min(oldIndex,buttons.length-1)]||favoriteTab).focus()}
+ });
+ setFavorite(favorite);actions.append(listen,spotify,youtube,favorite);row.append(art,info,actions,player);return row;
+}
+function setFavorite(button){const saved=favorites.includes(button.dataset.track),track=byId.get(button.dataset.track);button.textContent=saved?'★':'☆';button.setAttribute('aria-pressed',String(saved));button.setAttribute('aria-label',(saved?'Quitar de favoritos: ':'Guardar en favoritos: ')+track.title);button.title=saved?'Quitar de favoritos':'Guardar en favoritos'}
+function syncFavorites(){document.querySelectorAll('.favorite').forEach(setFavorite);favoriteTab.textContent='☆ Favoritos'+(favorites.length?' ('+favorites.length+')':'')}
+function renderSearch(){
+ const text=query.value.trim(),words=normalize(text).split(/\s+/).filter(Boolean);
+ favoriteTab.setAttribute('aria-pressed',String(view==='favorites'));historyTab.setAttribute('aria-pressed',String(view==='history'));
+ document.getElementById('clear-history').hidden=view!=='history'||!history.length;
+ if(activePlayer&&results.contains(activePlayer))closePlayer(activePlayer);
+ results.replaceChildren();external.replaceChildren();external.hidden=!text;
+ if(text){external.append(link('Buscar en Spotify',searchUrl('spotify',text),'play'),link('Buscar en YouTube',searchUrl('youtube',text),'secondary'))}
+ let tracks=view==='favorites'?favorites.map(id=>byId.get(id)):view==='history'?history.map(id=>byId.get(id)):catalog;
+ tracks=tracks.filter(t=>words.every(word=>normalize(t.title+' '+t.artist).includes(word)));
+ if(view==='search'&&!text){message.textContent='';syncFavorites();return}
+ message.textContent=view==='search'?(tracks.length?tracks.length+' coincidencia(s) en Moodify.':'No hay coincidencias en Moodify. Prueba los enlaces de búsqueda de arriba.'):view==='favorites'?(tracks.length?'Tus favoritos'+(text?' que coinciden con la búsqueda:':':'):text?'No hay favoritos que coincidan.':'Todavía no tienes favoritos. Pulsa ☆ junto a una canción.'):(tracks.length?'Últimas canciones abiertas'+(text?' que coinciden con la búsqueda:':':'):text?'No hay canciones recientes que coincidan.':'Todavía no has abierto canciones.');
+ tracks.forEach(track=>results.appendChild(trackRow(track)));syncFavorites();
+}
+document.getElementById('search-form').addEventListener('submit',event=>{event.preventDefault();view='search';renderSearch();if(!query.value.trim()){message.textContent='Escribe una canción o un artista.';query.focus()}});
+query.addEventListener('input',renderSearch);
+document.getElementById('clear-search').addEventListener('click',()=>{query.value='';view='search';renderSearch();query.focus()});
+favoriteTab.addEventListener('click',()=>{view=view==='favorites'?'search':'favorites';renderSearch()});
+historyTab.addEventListener('click',()=>{view=view==='history'?'search':'history';renderSearch()});
+document.getElementById('clear-history').addEventListener('click',()=>{history=[];persist('moodify-history',history);renderSearch();historyTab.focus();status.textContent='Historial borrado.'});
+renderSearch();
+
+for(const item of data){
+ const card=el('article','emotion-card');card.dataset.id=item.id;card.style.setProperty('--planet-color',tones[item.id]);
+ const trigger=el('button','emotion-trigger');trigger.type='button';trigger.setAttribute('aria-expanded','false');trigger.setAttribute('aria-controls','panel-'+item.id);
+ const im=el('img','planet-icon');im.src=planets[item.id];im.alt='';im.setAttribute('aria-hidden','true');
+ const meta=el('span','emotion-meta');meta.append(el('span','emotion-name',item.name),el('span','planet-title',labels[item.id]),el('span','toggle-hint','Ver música  +'));
+ trigger.append(im,meta);
+ const panel=el('section','emotion-details');panel.id='panel-'+item.id;panel.hidden=true;
+ panel.append(el('p','description',item.explain),el('div','detail-heading','Canciones para '+item.name.toLowerCase()));
+ for(const track of item.tracks) panel.appendChild(trackRow(track));
+ card.append(trigger,panel);grid.appendChild(card);
+ trigger.addEventListener('click',()=>toggleEmotion(item.id));
+}
+function toggleEmotion(id){
+ const card=grid.querySelector(`[data-id="${id}"]`);if(!card)return;
+ const opening=!card.classList.contains('open');
+ for(const c of grid.children){
+  const active=c===card&&opening;
+  c.classList.toggle('open',active);
+  c.querySelector('.emotion-trigger').setAttribute('aria-expanded',String(active));
+  c.querySelector('.emotion-details').hidden=!active;
+  c.querySelector('.toggle-hint').textContent=active?'Cerrar  −':'Ver música  +';
+ }
+ status.textContent=opening?`${labels[id]}: tres canciones disponibles para escuchar.`:'Elige un planeta.';
+}
+// Android: abre enlaces externos con un Intent nativo, sin depender de ventanas emergentes.
+document.addEventListener('click',event=>{
+ const anchor=event.target.closest('a[href]');
+ if(!anchor||!window.MoodifyAndroid||typeof window.MoodifyAndroid.openExternal!=='function')return;
+ const url=anchor.href;
+ if(!/^https:\/\/(open\.spotify\.com|(?:www\.|m\.)?youtube\.com)\//i.test(url))return;
+ event.preventDefault();window.MoodifyAndroid.openExternal(url);
+},true);
+function updateConnectivity(){document.getElementById('offline-notice').hidden=navigator.onLine!==false}
+window.addEventListener('online',updateConnectivity);
+window.addEventListener('offline',updateConnectivity);
+updateConnectivity();
+window.moodifyHandleBack=function(){
+ if(activePlayer){closePlayer(activePlayer);return true}
+ if(grid.querySelector('.emotion-card.open')){
+  const id=grid.querySelector('.emotion-card.open').dataset.id;toggleEmotion(id);return true;
+ }
+ if(view!=='search'){view='search';renderSearch();return true}
+ if(query.value.trim()){query.value='';renderSearch();return true}
+ return false;
+};
+</script></body></html>
